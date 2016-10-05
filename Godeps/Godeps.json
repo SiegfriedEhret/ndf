@@ -1,0 +1,15 @@
+{
+	"ImportPath": "gitlab.com/SiegfriedEhret/ndf",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/google/go-github/github",
+			"Rev": "a32b73b3f7165492568dbf7bf6663b5c369034db"
+		},
+		{
+			"ImportPath": "github.com/google/go-querystring/query",
+			"Rev": "9235644dd9e52eeae6fa48efd539fdc351a0af53"
+		}
+	]
+}
