@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"strings"
+	"sort"
 )
 
 const (
@@ -36,6 +37,12 @@ var (
 	help    bool
 	version bool
 )
+
+type ByName []*github.Label
+
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return *a[i].Name < *a[j].Name }
 
 func init() {
 	flag.StringVar(&owner, "owner", "SiegfriedEhret", "Set the Github username")
@@ -71,7 +78,7 @@ func doThings() {
 		fmt.Println(err)
 	}
 
-	fmt.Println(labels)
+	sort.Sort(ByName(labels))
 
 	var md bytes.Buffer
 
@@ -101,6 +108,8 @@ func doThings() {
 			for _, issue := range issues {
 				body := *issue.Body
 				title := *issue.Title
+
+				fmt.Println(body, title)
 
 				for _, issueLabel := range issue.Labels {
 					switch *issueLabel.Name {
