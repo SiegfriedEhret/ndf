@@ -9,9 +9,12 @@ import (
 	"bytes"
 	"io/ioutil"
 
-	"github.com/google/go-github/github"
-	"strings"
 	"sort"
+	"strings"
+
+	"context"
+	"github.com/Sirupsen/logrus"
+	"github.com/google/go-github/github"
 )
 
 const (
@@ -19,13 +22,13 @@ const (
 	appVersion string = "0.1.0"
 	helpText   string = `=========
 Flags:
-	--help		Show this help :-)
-	--version	To display the current version
+	-help		Show this help :-)
+	-version	To display the current version
 Actually do something:
-	--owner		The name of the repository owner
-	--repo		The name of the repository
-	--milestone	The id of the milestone
-	--close		Close issues and milestone`
+	-owner		The name of the repository owner
+	-repo		The name of the repository
+	-milestone	The id of the milestone
+	-close		Close issues and milestone`
 )
 
 var (
@@ -33,26 +36,33 @@ var (
 	repo        string
 	milestone   string
 	closeIssues bool
+	debug       bool
 
 	help    bool
 	version bool
 )
-
-type ByName []*github.Label
-
-func (a ByName) Len() int           { return len(a) }
-func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByName) Less(i, j int) bool { return *a[i].Name < *a[j].Name }
 
 func init() {
 	flag.StringVar(&owner, "owner", "SiegfriedEhret", "Set the Github username")
 	flag.StringVar(&repo, "repo", "ndf", "Set the Github repository")
 	flag.StringVar(&milestone, "milestone", "1", "Set milestone to release")
 	flag.BoolVar(&closeIssues, "close", false, "Close things")
+	flag.BoolVar(&debug, "d", false, "Run in debug mode")
 
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.BoolVar(&version, "version", false, "Show version")
 	flag.Parse()
+
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+		logrus.WithFields(logrus.Fields{
+			"owner":       owner,
+			"repo":        repo,
+			"milestone":   milestone,
+			"closeIssues": closeIssues,
+			"debug":       debug,
+		}).Debug("Cli flags")
+	}
 }
 
 func main() {
@@ -72,13 +82,15 @@ func doThings() {
 
 	client := github.NewClient(nil)
 
-	labels, _, err := client.Issues.ListLabels(owner, repo, nil)
+	labels, _, err := client.Issues.ListLabels(context.Background(), owner, repo, nil)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	sort.Sort(ByName(labels))
+	sort.Slice(labels, func(i, j int) bool {
+		return *labels[i].Name < *labels[j].Name
+	})
 
 	var md bytes.Buffer
 
@@ -90,26 +102,32 @@ func doThings() {
 		}
 
 		opts := &github.IssueListByRepoOptions{
-			Milestone: "1",
+			Milestone: milestone,
 			Labels:    []string{labelName},
 		}
 
-		issues, _, err := client.Issues.ListByRepo(owner, repo, opts)
+		issues, _, err := client.Issues.ListByRepo(context.Background(), owner, repo, opts)
 
 		if err != nil {
 			fmt.Println(err)
 		} else if len(issues) == 0 {
 			fmt.Println("No issues for label", labelName)
 		} else {
-			fmt.Println(labelName)
+			logrus.Debug(labelName)
 
-			md.WriteString("## " + labelName + "\n")
+			labelToDisplay := labelName
+			index := strings.Index(labelToDisplay, "/")
+			if index != -1 {
+				labelToDisplay = labelToDisplay[index+1:]
+			}
+
+			md.WriteString("## " + labelToDisplay + "\n")
 
 			for _, issue := range issues {
 				body := *issue.Body
 				title := *issue.Title
 
-				fmt.Println(body, title)
+				logrus.Debug(body, title)
 
 				for _, issueLabel := range issue.Labels {
 					switch *issueLabel.Name {
@@ -121,7 +139,7 @@ func doThings() {
 				}
 			}
 
-			err := ioutil.WriteFile("./ndf-" + milestone + ".md", md.Bytes(), 0644)
+			err := ioutil.WriteFile("./ndf-"+milestone+".md", md.Bytes(), 0644)
 
 			if err != nil {
 				fmt.Println("Error while creating file", err)
@@ -129,17 +147,5 @@ func doThings() {
 		}
 	}
 
-	fmt.Println(md.String())
-
-	//issues, _, err := client.Issues.ListByRepo(owner, repo, nil)
-	//
-	//if err != nil {
-	//	fmt.Println(err)
-	//} else {
-	//	fmt.Println(issues)
-	//}
+	logrus.Debug(md.String())
 }
-
-//func getMilestones(client *github.Client) ([]*github.Milestone, *github.Response, error) {
-//	return client.Issues.ListMilestones(owner, repo, nil)
-//}
