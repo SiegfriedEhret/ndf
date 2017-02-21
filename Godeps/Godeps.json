@@ -1,15 +1,24 @@
 {
 	"ImportPath": "gitlab.com/SiegfriedEhret/ndf",
-	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v77",
 	"Deps": [
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.11.0-35-g61e43dc",
+			"Rev": "61e43dc76f7ee59a82bdf3d71033dc12bea4c77d"
+		},
+		{
 			"ImportPath": "github.com/google/go-github/github",
-			"Rev": "a32b73b3f7165492568dbf7bf6663b5c369034db"
+			"Rev": "23d6cb9cacb5aa314e93d600fe20a48496a718d4"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",
-			"Rev": "9235644dd9e52eeae6fa48efd539fdc351a0af53"
+			"Rev": "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "075e574b89e4c2d22f2286a7e2b919519c6f3547"
 		}
 	]
 }
