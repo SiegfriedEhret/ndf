@@ -9,12 +9,13 @@ import (
 	"bytes"
 	"io/ioutil"
 
-	"sort"
 	"strings"
 
 	"context"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
+	"gitlab.com/SiegfriedEhret/ndf/giteub"
 )
 
 const (
@@ -24,9 +25,11 @@ const (
 Flags:
 	-help		Show this help :-)
 	-version	To display the current version
+
 Actually do something:
 	-owner		The name of the repository owner
 	-repo		The name of the repository
+	-token		The Github token, see https://github.com/settings/tokens
 	-milestone	The id of the milestone
 	-close		Close issues and milestone`
 )
@@ -35,6 +38,7 @@ var (
 	owner       string
 	repo        string
 	milestone   string
+	token       string
 	closeIssues bool
 	debug       bool
 
@@ -45,8 +49,9 @@ var (
 func init() {
 	flag.StringVar(&owner, "owner", "SiegfriedEhret", "Set the Github username")
 	flag.StringVar(&repo, "repo", "ndf", "Set the Github repository")
-	flag.StringVar(&milestone, "milestone", "1", "Set milestone to release")
-	flag.BoolVar(&closeIssues, "close", false, "Close things")
+	flag.StringVar(&milestone, "milestone", "test1", "Set milestone to release")
+	flag.StringVar(&token, "token", "", "Set Github access token (https://github.com/settings/tokens)")
+	flag.BoolVar(&closeIssues, "close", false, "Close milestones and issues")
 	flag.BoolVar(&debug, "d", false, "Run in debug mode")
 
 	flag.BoolVar(&help, "help", false, "Show help")
@@ -78,19 +83,20 @@ func main() {
 }
 
 func doThings() {
-	fmt.Printf("%s %s\n", appName, appVersion)
+	client := giteub.GetGithubClient(token)
 
-	client := github.NewClient(nil)
-
-	labels, _, err := client.Issues.ListLabels(context.Background(), owner, repo, nil)
+	err, milestoneId := giteub.GetMilestone(client, owner, repo, milestone)
 
 	if err != nil {
-		fmt.Println(err)
+		logrus.Fatal(err.Error())
 	}
 
-	sort.Slice(labels, func(i, j int) bool {
-		return *labels[i].Name < *labels[j].Name
-	})
+	err, labels := giteub.GetLabels(client, owner, repo)
+
+	if err != nil {
+		logrus.Debug("Failed to get labels")
+		logrus.Fatal(err.Error())
+	}
 
 	var md bytes.Buffer
 
@@ -102,7 +108,7 @@ func doThings() {
 		}
 
 		opts := &github.IssueListByRepoOptions{
-			Milestone: milestone,
+			Milestone: milestoneId,
 			Labels:    []string{labelName},
 		}
 
@@ -148,4 +154,12 @@ func doThings() {
 	}
 
 	logrus.Debug(md.String())
+
+	//issues, _, err := client.Issues.ListByRepo(owner, repo, nil)
+	//
+	//if err != nil {
+	//	fmt.Println(err)
+	//} else {
+	//	fmt.Println(issues)
+	//}
 }
