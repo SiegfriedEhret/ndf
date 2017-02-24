@@ -127,7 +127,7 @@ func doThings() {
 				labelToDisplay = labelToDisplay[index+1:]
 			}
 
-			md.WriteString("## " + labelToDisplay + "\n")
+			md.WriteString("## " + labelToDisplay + "\n\n")
 
 			for _, issue := range issues {
 				body := *issue.Body
@@ -138,9 +138,9 @@ func doThings() {
 				for _, issueLabel := range issue.Labels {
 					switch *issueLabel.Name {
 					case "type/link":
-						md.WriteString("- " + title + ": " + body + "\n")
+						md.WriteString("- " + title + ": " + body + "\n\n")
 					case "type/text":
-						md.WriteString(title + "\n\n" + body + "\n")
+						md.WriteString(title + "\n\n" + body + "\n\n")
 					}
 				}
 			}
