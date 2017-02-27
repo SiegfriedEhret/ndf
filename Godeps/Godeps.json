@@ -17,6 +17,18 @@
 			"Rev": "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 		},
 		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "f2499483f923065a842d38eb4c7f1927e6fc6e6d"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2",
+			"Rev": "b9780ec78894ab900c062d58ee3076cd9b2a4501"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/internal",
+			"Rev": "b9780ec78894ab900c062d58ee3076cd9b2a4501"
+		},
+		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "075e574b89e4c2d22f2286a7e2b919519c6f3547"
 		}
