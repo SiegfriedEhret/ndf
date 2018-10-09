@@ -13,9 +13,9 @@ import (
 
 	"context"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
-	"gitlab.com/SiegfriedEhret/ndf/giteub"
+	"github.com/sirupsen/logrus"
+	"gitlab.com/SiegfriedEhret/ndf/githoub"
 )
 
 const (
@@ -56,6 +56,9 @@ func init() {
 
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.BoolVar(&version, "version", false, "Show version")
+}
+
+func main() {
 	flag.Parse()
 
 	if debug {
@@ -68,9 +71,7 @@ func init() {
 			"debug":       debug,
 		}).Debug("Cli flags")
 	}
-}
 
-func main() {
 	if help {
 		fmt.Printf("%s %s\n", appName, appVersion)
 		fmt.Println(helpText)
@@ -83,15 +84,15 @@ func main() {
 }
 
 func doThings() {
-	client := giteub.GetGithubClient(token)
+	client := githoub.GetGithubClient(token)
 
-	err, milestoneId := giteub.GetMilestone(client, owner, repo, milestone)
+	err, milestoneId := githoub.GetMilestone(client, owner, repo, milestone)
 
 	if err != nil {
 		logrus.Fatal(err.Error())
 	}
 
-	err, labels := giteub.GetLabels(client, owner, repo)
+	err, labels := githoub.GetLabels(client, owner, repo)
 
 	if err != nil {
 		logrus.Debug("Failed to get labels")
@@ -154,12 +155,4 @@ func doThings() {
 	}
 
 	logrus.Debug(md.String())
-
-	//issues, _, err := client.Issues.ListByRepo(owner, repo, nil)
-	//
-	//if err != nil {
-	//	fmt.Println(err)
-	//} else {
-	//	fmt.Println(issues)
-	//}
 }

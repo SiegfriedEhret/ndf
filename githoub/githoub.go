@@ -1,4 +1,4 @@
-package giteub
+package githoub
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
